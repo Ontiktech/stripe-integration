@@ -11,12 +11,12 @@ pipeline {
         }
         stage('Dockerize') {
             steps {
-                sh 'docker build -t test-app .'
+                sh 'docker build -t stripe-app .'
             }
         }
         stage('Deploy to Docker') {
             steps {
-                sh 'docker run -d -p 3000:3000 --name test-app test-app:latest'
+                sh 'docker run -d -p 3000:3000 --name strpe-app stripe-app:latest'
             }
         }
     }
