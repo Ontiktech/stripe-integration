@@ -12,7 +12,7 @@ const validateStripeWebhook = async (req, res, next) => {
 
 			try {
 				const sig = req.headers["stripe-signature"];
-				req.webhookEvent = stripe.constructEvent(req, sig, settings);
+				req.webhookEvent = stripe.constructEvent(req, sig, stripeConfiguration.webhook_endpoints_secret);
 			} catch (error) {
 				console.log(error);
 				sendErrorResponse(res, 403, "Access Denied.", error);

@@ -1,6 +1,5 @@
 const stripe = require("stripe");
 const { getURL } = require("./misc");
-const moment = require("moment/moment");
 const fs = require("fs");
 
 const client = process.env.STRIPE_API_KEY ? stripe(process.env.STRIPE_API_KEY) : false;
@@ -35,7 +34,7 @@ const setup = async () => {
 
 	if (stripeUpdated) {
 		let updatedConfigJson = JSON.stringify(config);
-		fs.writeFile("data/config.json", updatedConfigJson, (err) => {
+		fs.writeFileSync("data/config.json", updatedConfigJson, (err) => {
 			if (err) throw err;
 		});
 	}
@@ -75,7 +74,7 @@ const setup = async () => {
 
 	if (planUpdated) {
 		let updatedPlanJson = JSON.stringify(plan);
-		fs.writeFile("data/plan.json", updatedPlanJson, (err) => {
+		fs.writeFileSync("data/plan.json", updatedPlanJson, (err) => {
 			if (err) throw err;
 		});
 	}
@@ -166,7 +165,7 @@ const createBillingPortalSession = async (user, config) => {
 const createCheckoutSession = async (user, plan) => {
 	return await client.checkout.sessions.create({
 		customer: user.stripe_customer_id,
-		success_url: getURL("/payment/success"),
+		success_url: getURL("/stripe/success"),
 		line_items: [
 			{
 				price: plan.stripe_price_id,
@@ -210,8 +209,8 @@ const listInvoices = async (
 	return await client.invoices.list(params);
 };
 
-const constructEvent = (req, sig, settings) => {
-	return client.webhooks.constructEvent(req.body, sig, settings.value);
+const constructEvent = (req, sig, secret) => {
+	return client.webhooks.constructEvent(req.body, sig, secret);
 };
 
 module.exports = {

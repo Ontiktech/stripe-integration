@@ -1,8 +1,9 @@
 const { sendErrorResponse, sendSuccessResponse } = require("../utils/response");
 const stripe = require("../utils/stripe");
 const fs = require("fs");
-const { logToFile } = require("../utils/logger");
 const { filter, update } = require("../utils/data");
+const { logEvents } = require("../middlewares/logEvents");
+const { format } = require("date-fns");
 
 const getPortal = async (req, res, next) => {
 	try {
@@ -36,7 +37,7 @@ const getPortal = async (req, res, next) => {
 		if (userUpdated) {
 			let updatedUsers = update(users, "id", user.id, user, true);
 			let updatedUsersJson = JSON.stringify(updatedUsers);
-			fs.writeFile("data/users.json", updatedUsersJson, (err) => {
+			fs.writeFileSync("data/users.json", updatedUsersJson, (err) => {
 				if (err) throw err;
 			});
 		}
@@ -68,7 +69,7 @@ const success = async (req, res, next) => {
 const webhook = async (req, res, next) => {
 	try {
 		const event = req.webhookEvent;
-		logToFile("events", event);
+		logEvents(`${event.type}\t${JSON.stringify(event.data)}`, `events_${format(new Date(), "yyyyMMdd")}.txt`);
 
 		switch (event.type) {
 			case "customer.subscription.created":
@@ -117,7 +118,7 @@ const handleSubscriptionCreated = async (data) => {
 
 		let updatedUsers = update(users, "id", user.id, user, true);
 		let updatedUsersJson = JSON.stringify(updatedUsers);
-		fs.writeFile("data/users.json", updatedUsersJson, (err) => {
+		fs.writeFileSync("data/users.json", updatedUsersJson, (err) => {
 			if (err) throw err;
 		});
 	}
@@ -139,7 +140,7 @@ const handleSubscriptionCancelled = async (data) => {
 
 		let updatedUsers = update(users, "id", user.id, user, true);
 		let updatedUsersJson = JSON.stringify(updatedUsers);
-		fs.writeFile("data/users.json", updatedUsersJson, (err) => {
+		fs.writeFileSync("data/users.json", updatedUsersJson, (err) => {
 			if (err) throw err;
 		});
 	}
