@@ -27,7 +27,7 @@ pipeline {
         }
         stage('Deploy to Docker') {
             steps {
-                sh 'docker run -d -p 3000:3000 --name strpe-app stripe-app:latest'
+                sh 'docker run -d -p 5000:5000 --name strpe-app stripe-app:latest'
             }
         }
     }
