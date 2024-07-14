@@ -9,6 +9,11 @@ pipeline {
                 sh 'npm install'
             }
         }
+        stage('Remove Old Container') {
+            steps {
+                sh 'docker rm -f strpe-app'
+            }
+        }
         stage('Dockerize') {
             steps {
                 sh 'docker build -t stripe-app .'
