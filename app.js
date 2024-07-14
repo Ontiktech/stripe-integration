@@ -4,11 +4,12 @@ const express = require("express");
 
 const { eventLogger } = require("./middlewares/logEvents");
 const { errorHandler } = require("./middlewares/errorHandler");
-const validateStripeWebhook = require("./middlewares/validateStripeWebhook.js");
+const validateStripeWebhook = require("./middlewares/validateStripeWebhook");
 
 const stripe = require("./utils/stripe.js");
 
-const stripeController = require("./controllers/payment/stripeController.js");
+const stripeController = require("./controllers/stripeController.js");
+const userController = require("./controllers/userController.js");
 
 // routes files
 
@@ -30,8 +31,12 @@ app.use(express.static("public"));
 app.use(eventLogger);
 global.__basedir = __dirname;
 
-app.get("/portal/:id", stripeController.portal);
+app.get("/portal/:id", stripeController.getPortal);
 app.get("/success", stripeController.success);
+
+app.get("/users/:id", userController.getUser);
+app.get("/users/:id/subscription", userController.getUserSubscription);
+app.get("/users/:id/invoices", userController.getUserInvoices);
 
 app.use(errorHandler);
 

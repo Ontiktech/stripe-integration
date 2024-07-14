@@ -2,12 +2,12 @@ const fs = require("fs");
 const path = require("path");
 
 // Function to get the log file path for the current date
-const getLogFilePath = () => {
+const getLogFilePath = (filenamePrefix) => {
 	const currentDate = new Date();
 	const year = currentDate.getFullYear();
 	const month = String(currentDate.getMonth() + 1).padStart(2, "0");
 	const day = String(currentDate.getDate()).padStart(2, "0");
-	const logFileName = `${year}-${month}-${day}.log`;
+	const logFileName = filenamePrefix + "-" + `${year}-${month}-${day}.log`;
 	return path.join(__dirname, "../../logs", logFileName);
 };
 
@@ -21,8 +21,8 @@ const formatData = (data) => {
 };
 
 // Function to log messages to a file
-const logToFile = (message) => {
-	const logFilePath = getLogFilePath();
+const logToFile = (filenamePrefix = "log", message) => {
+	const logFilePath = getLogFilePath(filenamePrefix);
 	const logMessage = `[${new Date().toISOString()}] ${formatData(message)}\n`;
 	fs.appendFile(logFilePath, logMessage, { flag: "a" }, (err) => {
 		if (err) {

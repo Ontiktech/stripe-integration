@@ -34,8 +34,8 @@ const setup = async () => {
 	}
 
 	if (stripeUpdated) {
-		configJson = JSON.stringify(config);
-		fs.writeFile("data/config.json", configJson, (err) => {
+		let updatedConfigJson = JSON.stringify(config);
+		fs.writeFile("data/config.json", updatedConfigJson, (err) => {
 			if (err) throw err;
 		});
 	}
@@ -74,8 +74,8 @@ const setup = async () => {
 	}
 
 	if (planUpdated) {
-		planJson = JSON.stringify(plan);
-		fs.writeFile("data/plan.json", planJson, (err) => {
+		let updatedPlanJson = JSON.stringify(plan);
+		fs.writeFile("data/plan.json", updatedPlanJson, (err) => {
 			if (err) throw err;
 		});
 	}
@@ -192,14 +192,20 @@ const retrieveSubscription = async (subscriptionId) => {
 	return await client.subscriptions.retrieve(subscriptionId);
 };
 
-const listInvoices = async (starting_after = null, ending_before = null) => {
+const listInvoices = async (
+	status = "paid",
+	starting_after = null,
+	ending_before = null,
+	stripe_customer_id = null
+) => {
 	let params = {
-		status: "paid",
 		limit: 100,
 	};
 
+	if (status) params.status = status;
 	if (starting_after) params.starting_after = starting_after;
 	if (ending_before) params.ending_before = ending_before;
+	if (stripe_customer_id) params.customer = stripe_customer_id;
 
 	return await client.invoices.list(params);
 };
