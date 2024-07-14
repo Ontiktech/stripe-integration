@@ -9,6 +9,11 @@ pipeline {
                 sh 'npm install'
             }
         }
+        stage('Copy .env') {
+            steps {
+                sh 'cp .env.example .env'
+            }
+        }
         stage('Remove Old Container') {
             steps {
                 sh 'docker rm -f strpe-app'
