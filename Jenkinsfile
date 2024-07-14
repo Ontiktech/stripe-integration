@@ -11,7 +11,7 @@ pipeline {
         }
         stage('Copy .env') {
             steps {
-                sh 'rm -f data'
+                sh 'rm -rf data'
                 sh 'mkdir data'
                 sh 'cp .env.example .env'
             }
