@@ -1,0 +1,10 @@
+{
+	"name": "Gold",
+	"description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin eros purus, dictum at sapien vitae, rutrum molestie nisl. Sed odio metus, aliquam id fringilla in, commodo et metus.",
+	"price": 25,
+	"currency": "USD",
+	"duration": 30,
+	"free_trial_duration": 7,
+	"stripe_product_id": null,
+	"stripe_price_id": null
+}

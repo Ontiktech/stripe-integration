@@ -1,6 +1,6 @@
 const stripe = require("stripe");
 const { getURL } = require("./misc");
-const fs = require("fs");
+const { readFile, writeFile } = require("./file");
 
 const client = process.env.STRIPE_API_KEY ? stripe(process.env.STRIPE_API_KEY) : false;
 
@@ -9,78 +9,6 @@ const isEnabled = () => Boolean(client);
 const isWebhookEnabled = () => process.env.STRIPE_WEBHOOK_ENABLED === "true";
 
 const getClient = () => client;
-
-const setup = async () => {
-	let configJson = fs.readFileSync("data/config.json");
-	var planJson = fs.readFileSync("data/plan.json");
-
-	let config = JSON.parse(configJson);
-	var plan = JSON.parse(planJson);
-
-	let stripeUpdated = false;
-	if (config.webhook_endpoints_secret === null) {
-		const stripeWebhookEndpoint = await createWebhookEndpoints();
-
-		config.webhook_endpoints_secret = stripeWebhookEndpoint.secret;
-		stripeUpdated = true;
-	}
-
-	if (config.portal_configuration_id === null) {
-		const stripePortalConfiguration = await createBillingPortalConfiguration();
-
-		config.portal_configuration_id = stripePortalConfiguration.id;
-		stripeUpdated = true;
-	}
-
-	if (stripeUpdated) {
-		let updatedConfigJson = JSON.stringify(config);
-		fs.writeFileSync("data/config.json", updatedConfigJson, (err) => {
-			if (err) throw err;
-		});
-	}
-
-	let planUpdated = false;
-	if (plan.stripe_product_id === null) {
-		const stripeProduct = await createProduct(plan);
-
-		plan.stripe_product_id = stripeProduct.id;
-		planUpdated = true;
-	} else {
-		await updateProduct(plan);
-	}
-
-	if (plan.stripe_price_id === null) {
-		const stripePrice = await createPrice(plan);
-
-		plan.stripe_price_id = stripePrice.id;
-		planUpdated = true;
-	} else {
-		const stripePrice = await client.prices.retrieve(plan.stripe_price_id);
-		if (
-			stripePrice.currency !== plan.currency.toLowerCase() ||
-			stripePrice.unit_amount / 100 !== plan.price ||
-			stripePrice.recurring.interval_count !== plan.duration ||
-			stripePrice.product !== plan.stripe_product_id
-		) {
-			await updatePrice(plan.stripe_price_id, {
-				active: false,
-			});
-			const stripePrice = await createPrice(plan);
-
-			plan.stripe_price_id = stripePrice.id;
-			planUpdated = true;
-		}
-	}
-
-	if (planUpdated) {
-		let updatedPlanJson = JSON.stringify(plan);
-		fs.writeFileSync("data/plan.json", updatedPlanJson, (err) => {
-			if (err) throw err;
-		});
-	}
-
-	console.log("Stripe setup successful.");
-};
 
 const createProduct = async (plan) => {
 	return await client.products.create({
@@ -94,6 +22,10 @@ const updateProduct = async (plan) => {
 		name: plan.name,
 		description: plan.description,
 	});
+};
+
+const retrievePrice = async (price_id) => {
+	return await client.prices.retrieve(price_id);
 };
 
 const createPrice = async (plan) => {
@@ -110,6 +42,26 @@ const createPrice = async (plan) => {
 
 const updatePrice = async (price_id, params) => {
 	return await client.prices.update(price_id, params);
+};
+
+const deleteOldWebhookEndpoints = async () => {
+	let startingAfter = null;
+	while (true) {
+		let params = {
+			limit: 10,
+		};
+		if (startingAfter) params.starting_after = startingAfter;
+		let oldWebhookEndpoints = await client.webhookEndpoints.list(params);
+
+		for (const webhookEndpoint of oldWebhookEndpoints.data) {
+			if (webhookEndpoint.url === getURL("/stripe/webhooks")) {
+				await client.webhookEndpoints.del(webhookEndpoint.id);
+				startingAfter = webhookEndpoint.id;
+			}
+		}
+
+		if (!oldWebhookEndpoints.has_more) break;
+	}
 };
 
 const createWebhookEndpoints = async () => {
@@ -217,7 +169,14 @@ module.exports = {
 	isEnabled,
 	isWebhookEnabled,
 	getClient,
-	setup,
+	createProduct,
+	updateProduct,
+	retrievePrice,
+	createPrice,
+	updatePrice,
+	deleteOldWebhookEndpoints,
+	createWebhookEndpoints,
+	createBillingPortalConfiguration,
 	createCustomer,
 	createBillingPortalSession,
 	createCheckoutSession,

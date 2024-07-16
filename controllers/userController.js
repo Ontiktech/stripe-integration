@@ -1,11 +1,11 @@
-const { filter } = require("../utils/data");
+const { filter, update } = require("../utils/data");
+const { readFile, writeFile } = require("../utils/file");
 const { sendSuccessResponse, sendErrorResponse } = require("../utils/response");
 const stripe = require("../utils/stripe");
-const fs = require("fs");
 
 const getUser = async (req, res, next) => {
 	try {
-		var usersJson = fs.readFileSync("data/users.json");
+		var usersJson = readFile("data", "users.json");
 		var users = JSON.parse(usersJson);
 
 		var user = filter(users, "id", parseInt(req.params.id), true);
@@ -21,9 +21,60 @@ const getUser = async (req, res, next) => {
 	}
 };
 
+const getPortal = async (req, res, next) => {
+	try {
+		if (!stripe.isEnabled()) {
+			sendErrorResponse(res, 404, "Stripe is not enabled.");
+			return;
+		}
+
+		var usersJson = readFile("data", "users.json");
+		var configJson = readFile("data", "config.json");
+		var planJson = readFile("data", "plan.json");
+
+		var users = JSON.parse(usersJson);
+		var config = JSON.parse(configJson);
+		var plan = JSON.parse(planJson);
+
+		var user = filter(users, "id", parseInt(req.params.id), true);
+		if (user === null) {
+			sendErrorResponse(res, 404, "User does not exist.");
+			return;
+		}
+
+		var userUpdated = false;
+		if (user.stripe_customer_id === null) {
+			const stripeCustomer = await stripe.createCustomer(user);
+
+			user.stripe_customer_id = stripeCustomer.id;
+			userUpdated = true;
+		}
+
+		if (userUpdated) {
+			let updatedUsers = update(users, "id", user.id, user, true);
+			let updatedUsersJson = JSON.stringify(updatedUsers);
+			writeFile("data", "users.json", updatedUsersJson);
+		}
+
+		if (user.stripe_subscription_id !== null) {
+			const stripeSession = await stripe.createBillingPortalSession(user, config);
+
+			res.redirect(303, stripeSession.url);
+			return;
+		} else {
+			const stripeCheckoutSession = await stripe.createCheckoutSession(user, plan);
+
+			res.redirect(303, stripeCheckoutSession.url);
+			return;
+		}
+	} catch (error) {
+		next(error);
+	}
+};
+
 const getUserSubscription = async (req, res, next) => {
 	try {
-		var usersJson = fs.readFileSync("data/users.json");
+		var usersJson = readFile("data", "users.json");
 		var users = JSON.parse(usersJson);
 
 		var user = filter(users, "id", parseInt(req.params.id), true);
@@ -48,7 +99,7 @@ const getUserSubscription = async (req, res, next) => {
 
 const getUserInvoices = async (req, res, next) => {
 	try {
-		var usersJson = fs.readFileSync("data/users.json");
+		var usersJson = readFile("data", "users.json");
 		var users = JSON.parse(usersJson);
 
 		var user = filter(users, "id", parseInt(req.params.id), true);
@@ -73,6 +124,7 @@ const getUserInvoices = async (req, res, next) => {
 
 module.exports = {
 	getUser,
+	getPortal,
 	getUserSubscription,
 	getUserInvoices,
 };

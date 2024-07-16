@@ -1,67 +1,41 @@
-const fs = require("fs");
+const { exists, writeFile, deleteFile, createDirectory, readFile } = require("./file");
 
-const seedAll = () => {
-	seedConfigJson();
-	seedPlanJson();
-	seedUsersJson();
+const seedAll = (refresh = false) => {
+	if (!exists("data")) createDirectory("data");
+
+	seedConfigJson(refresh);
+	seedPlanJson(refresh);
+	seedUsersJson(refresh);
 };
 
-const seedConfigJson = () => {
-	if (fs.existsSync("data/config.json")) {
-		return;
-	}
+const seedConfigJson = (refresh = false) => {
+	if (refresh) {
+		if (exists("data", "config.json")) deleteFile("data", "config.json");
+		writeFile("data", "config.json", "");
+	} else if (exists("data", "config.json")) return;
 
-	let config = { webhook_endpoints_secret: null, portal_configuration_id: null };
-	let configJson = JSON.stringify(config);
-
-	fs.writeFileSync("data/config.json", configJson, (err) => {
-		if (err) throw err;
-	});
+	let configJson = readFile("data/seeders", "config.json");
+	writeFile("data", "config.json", configJson);
 };
 
-const seedPlanJson = () => {
-	if (fs.existsSync("data/plan.json")) {
-		return;
-	}
+const seedPlanJson = (refresh = false) => {
+	if (refresh) {
+		if (exists("data", "plan.json")) deleteFile("data", "plan.json");
+		writeFile("data", "plan.json", "");
+	} else if (exists("data", "plan.json")) return;
 
-	let plan = {
-		name: "Gold",
-		description:
-			"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin eros purus, dictum at sapien vitae, rutrum molestie nisl. Sed odio metus, aliquam id fringilla in, commodo et metus.",
-		price: 25,
-		currency: "USD",
-		duration: 30,
-		free_trial_duration: 7,
-		stripe_product_id: null,
-		stripe_price_id: null,
-	};
-	let planJson = JSON.stringify(plan);
-
-	fs.writeFileSync("data/plan.json", planJson, (err) => {
-		if (err) throw err;
-	});
+	let planJson = readFile("data/seeders", "plan.json");
+	writeFile("data", "plan.json", planJson);
 };
 
-const seedUsersJson = () => {
-	if (fs.existsSync("data/users.json")) {
-		return;
-	}
+const seedUsersJson = (refresh = false) => {
+	if (refresh) {
+		if (exists("data", "users.json")) deleteFile("data", "users.json");
+		writeFile("data", "users.json", "");
+	} else if (exists("data", "users.json")) return;
 
-	let users = [
-		{
-			id: 1,
-			first_name: "John",
-			last_name: "Doe",
-			email: "johndoe@example.com",
-			stripe_customer_id: null,
-			stripe_subscription_id: null,
-		},
-	];
-	let usersJson = JSON.stringify(users);
-
-	fs.writeFileSync("data/users.json", usersJson, (err) => {
-		if (err) throw err;
-	});
+	let usersJson = readFile("data/seeders", "users.json");
+	writeFile("data", "users.json", usersJson);
 };
 
 module.exports = {
