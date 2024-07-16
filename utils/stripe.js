@@ -55,9 +55,12 @@ const deleteOldWebhookEndpoints = async () => {
 
 		for (const webhookEndpoint of oldWebhookEndpoints.data) {
 			if (webhookEndpoint.url === getURL("/stripe/webhooks")) {
-				await client.webhookEndpoints.del(webhookEndpoint.id);
-				startingAfter = webhookEndpoint.id;
+				try {
+					await client.webhookEndpoints.del(webhookEndpoint.id);
+				} catch (err) {}
 			}
+
+			startingAfter = webhookEndpoint.id;
 		}
 
 		if (!oldWebhookEndpoints.has_more) break;
