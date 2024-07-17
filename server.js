@@ -12,12 +12,15 @@ const stripe = require("./utils/stripe.js");
 const stripeController = require("./controllers/stripeController.js");
 const userController = require("./controllers/userController.js");
 const { seedAll } = require("./utils/db.js");
+const { isTestEnvironment } = require("./utils/misc.js");
 
 // routes files
 
 const app = express();
 
-seedAll();
+seedAll(isTestEnvironment());
+
+if (isTestEnvironment()) app.use(express.json());
 
 if (stripe.isEnabled() && stripe.isWebhookEnabled()) {
 	app.use(setupStripe);
@@ -31,9 +34,7 @@ if (stripe.isEnabled() && stripe.isWebhookEnabled()) {
 	app.get("/stripe/success", stripeController.success);
 }
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static("public"));
+if (!isTestEnvironment()) app.use(express.json());
 app.use(eventLogger);
 
 app.get("/users/:id", userController.getUser);

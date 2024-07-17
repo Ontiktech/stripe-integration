@@ -21,7 +21,6 @@ const logEvents = async (message, logName) => {
 
 const eventLogger = (req, res, next) => {
 	logEvents(`${req.method}\t${req.headers.origin}\t${req.url}`, `access_${format(new Date(), "yyyyMMdd")}.txt`);
-	console.log(`${req.method} ${req.path}`);
 	next();
 };
 

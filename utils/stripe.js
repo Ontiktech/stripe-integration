@@ -1,6 +1,5 @@
 const stripe = require("stripe");
 const { getURL } = require("./misc");
-const { readFile, writeFile } = require("./file");
 
 const client = process.env.STRIPE_API_KEY ? stripe(process.env.STRIPE_API_KEY) : false;
 

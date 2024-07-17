@@ -1,8 +1,6 @@
-const { exists, writeFile, deleteFile, createDirectory, readFile } = require("./file");
+const { exists, writeFile, deleteFile, readFile } = require("./file");
 
 const seedAll = (refresh = false) => {
-	if (!exists("data")) createDirectory("data");
-
 	seedConfigJson(refresh);
 	seedPlanJson(refresh);
 	seedUsersJson(refresh);

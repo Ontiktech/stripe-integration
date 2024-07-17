@@ -22,5 +22,13 @@
 		"email": "subscribed_user@example.com",
 		"stripe_customer_id": null,
 		"stripe_subscription_id": "test_stripe_subscription_id"
+	},
+	{
+		"id": 4,
+		"first_name": "Stripe",
+		"last_name": "Customer",
+		"email": "subscribed_user@example.com",
+		"stripe_customer_id": "test_stripe_customer_id",
+		"stripe_subscription_id": null
 	}
 ]

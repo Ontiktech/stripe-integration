@@ -50,29 +50,25 @@ const setupStripe = async (req, res, next) => {
 			await updateProduct(plan);
 		}
 
-		if (plan.stripe_price_id === null) {
-			const stripePrice = await createPrice(plan);
-
-			plan.stripe_price_id = stripePrice.id;
-			planUpdated = true;
-		} else {
-			const stripePrice = await retrievePrice(plan.stripe_price_id);
+		if (plan.stripe_price_id !== null) {
+			const oldStripePrice = await retrievePrice(plan.stripe_price_id);
 
 			if (
-				stripePrice.currency !== plan.currency.toLowerCase() ||
-				stripePrice.unit_amount / 100 !== plan.price ||
-				stripePrice.recurring.interval_count !== plan.duration ||
-				stripePrice.product !== plan.stripe_product_id
+				oldStripePrice.currency !== plan.currency.toLowerCase() ||
+				oldStripePrice.unit_amount / 100 !== plan.price ||
+				oldStripePrice.recurring.interval_count !== plan.duration ||
+				oldStripePrice.product !== plan.stripe_product_id
 			) {
 				await updatePrice(plan.stripe_price_id, {
 					active: false,
 				});
-				const stripePrice = await createPrice(plan);
-
-				plan.stripe_price_id = stripePrice.id;
-				planUpdated = true;
 			}
 		}
+
+		const stripePrice = await createPrice(plan);
+
+		plan.stripe_price_id = stripePrice.id;
+		planUpdated = true;
 
 		if (planUpdated) {
 			let updatedPlanJson = JSON.stringify(plan);

@@ -1,6 +1,7 @@
 const { format } = require("date-fns");
 const { sendErrorResponse } = require("../utils/response");
 const { logEvents } = require("./logEvents");
+const { isTestEnvironment } = require("../utils/misc");
 
 const logError = (err, errorId = null, toFile = true, toConsole = true) => {
 	if (toFile) {
@@ -12,7 +13,7 @@ const logError = (err, errorId = null, toFile = true, toConsole = true) => {
 
 const errorHandler = (err, req, res, next) => {
 	const errorId = Date.now();
-	logError(err, errorId, true, !global.testing);
+	logError(err, errorId, true, !isTestEnvironment());
 	sendErrorResponse(res, 500, "Internal server error", { errorId: errorId });
 	return;
 };
