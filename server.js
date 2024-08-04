@@ -37,6 +37,9 @@ if (stripe.isEnabled() && stripe.isWebhookEnabled()) {
 if (!isTestEnvironment()) app.use(express.json());
 app.use(eventLogger);
 
+app.get("/", (req, res) => {
+	res.send("Hello World!");
+});
 app.get("/users/:id", userController.getUser);
 app.get("/users/:id/portal", userController.getPortal);
 app.get("/users/:id/subscription", userController.getUserSubscription);
