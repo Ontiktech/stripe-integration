@@ -20,7 +20,12 @@ pipeline {
         }
         stage('Remove Old Container') {
             steps {
-                sh 'docker rm -f strpe-app'
+                sh 'docker rm -f stripe-app'
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                sh 'npm run test'
             }
         }
         stage('Dockerize') {
