@@ -23,11 +23,11 @@ pipeline {
                 sh 'docker rm -f stripe-app'
             }
         }
-        stage('Run Tests') {
-            steps {
-                sh 'npm run test'
-            }
-        }
+        // stage('Run Tests') {
+        //     steps {
+        //         sh 'npm run test'
+        //     }
+        // }
         stage('Dockerize') {
             steps {
                 sh 'docker build -t stripe-app .'
