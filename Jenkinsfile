@@ -20,7 +20,9 @@ pipeline {
         }
         stage('Remove Old Container') {
             steps {
-                sh 'docker rm -f stripe-app'
+                // sh 'docker rm -f stripe-app'
+                sh 'docker stop $(docker ps -a -q)'
+                sh 'docker rm $(docker ps -a -q)'
             }
         }
         // stage('Run Tests') {
