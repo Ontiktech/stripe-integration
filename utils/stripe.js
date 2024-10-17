@@ -30,7 +30,7 @@ const retrievePrice = async (price_id) => {
 const createPrice = async (plan) => {
 	return await client.prices.create({
 		currency: plan.currency,
-		unit_amount: plan.price * 100,
+		unit_amount: parseInt(plan.price * 100),
 		recurring: {
 			interval: "day",
 			interval_count: plan.duration,
